@@ -150,7 +150,7 @@ end
         disp_en <= 0;
     end
     if(disp_en == 1 && reset == 0) begin
-        if(c_col > 63 && c_col < 578 && c_row > 111 && c_row < 368) begin //centered 512 x 256 area
+        if(c_col > 64 && c_col < 577 && c_row > 111 && c_row < 368) begin //centered 512 x 256 area
             if(dout == 1) begin //check pixel buffer data
               if(cs) begin //inverse
                 vga_r_r <= 0;
@@ -175,7 +175,7 @@ end
                 vga_b_r <= 0;
               end
             end
-            if(c_col == scale_col && c_col < 575) begin
+            if(c_col == scale_col) begin
               scale_col <= scale_col + 4;
               //and increment pixel buffer address horizontally (+8)
               raddr_r <= raddr_r + 8;
