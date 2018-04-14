@@ -1,6 +1,8 @@
 # VGA1306 (VGA-out for DIY Arduboys implemented on an FPGA!)
 
-VGA1306.v & VGA1306.pcf are for the SSD1306 Emulation
+VGA1306.v & VGA1306.pcf are for the SSD1306 Emulation (4x scaling of the 128x64 frame)
+
+VGA1306_640x320 is a variation of the SSD1306 Emulation (5x scaling of the 128x64 frame)
 
 ---
 
