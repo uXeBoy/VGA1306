@@ -25,9 +25,9 @@ wire [addr_width-1:0] raddr;
 reg  [addr_width-1:0] raddr_r = 0;
 assign raddr = raddr_r;
 
-input cs; // inverse
+input cs; // (not used)
 input wclk;
-input write_en; // DC
+input write_en;
 input [data_width-1:0] din;
 wire [addr_width-1:0] waddr;
 reg  [addr_width-1:0] waddr_r = 0;
@@ -156,7 +156,7 @@ always @ (posedge CLK25MHz) begin
               raddr_r <= 0;
         end
 
-        if(c_col == 78 && c_row > 24 && c_row < 453) begin //reset at the start of each line
+        if(c_col == 0 && c_row > 24 && c_row < 453) begin //reset at the start of each line
               scale_col <= 82;
               if(c_row == scale_row) begin
                 scale_row <= scale_row + 3;
@@ -167,7 +167,7 @@ always @ (posedge CLK25MHz) begin
               end
         end
          
-        if(c_col > 79 && c_col < 561 && c_row > 23 && c_row < 453) begin //centered 480 x 432 area
+        if(c_col > 80 && c_col < 561 && c_row > 23 && c_row < 453) begin //centered 480 x 432 area
         
             if(c_col == scale_col && c_col < 560) begin
               scale_col <= scale_col + 3;
