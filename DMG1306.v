@@ -28,6 +28,7 @@ assign raddr = raddr_r;
 input cs; // (not used)
 input wclk;
 input write_en;
+reg   write_en_r;
 input [data_width-1:0] din;
 wire [addr_width-1:0] waddr;
 reg  [addr_width-1:0] waddr_r = 0;
@@ -35,12 +36,17 @@ assign waddr = waddr_r;
 
 always @(negedge wclk) // Write memory
 begin
-  if(write_en == 1) begin // VSYNC
-    waddr_r <= 0;
+  if(write_en == 0 && write_en_r == 1) begin // VSYNC
+    mem[0] <= din;
+    waddr_r <= 1;
+    write_en_r <= 0;
   end
   else begin
     mem[waddr] <= din;
     waddr_r <= waddr_r + 1; // Increment address
+    if(write_en == 1) begin
+      write_en_r <= 1;
+    end
   end
 end
 
@@ -147,34 +153,37 @@ always @ (posedge CLK25MHz) begin
         disp_en <= 0;
     end
     if(disp_en == 1 && reset == 0) begin
-    
+
         dout <= mem[raddr]; // Read memory
-        
-        if(c_row == 0 && c_col == 0) begin //reset
+
+        if(c_row == 0 && c_col == 0) begin //reset scaling
               scale_col <= 82;
               scale_row <= 27;
+        end
+
+        if(c_row == 23 && c_col == 639) begin //reset address
               raddr_r <= 0;
         end
 
-        if(c_col == 0 && c_row > 24 && c_row < 453) begin //reset at the start of each line
+        if(c_col == 0 && c_row > 21 && c_row < 453) begin //reset at the start of each line
               scale_col <= 82;
               if(c_row == scale_row) begin
                 scale_row <= scale_row + 3;
               end
-              else begin
+              else if(raddr_r != 0) begin
                 //set pixel buffer address back to beginning of line
                 raddr_r <= raddr_r - 160;
               end
         end
-         
-        if(c_col > 80 && c_col < 561 && c_row > 23 && c_row < 453) begin //centered 480 x 432 area
-        
+
+        if(c_col > 80 && c_col < 561 && c_row > 20 && c_row < 453) begin //centered 480 x 432 area
+
             if(c_col == scale_col && c_col < 560) begin
               scale_col <= scale_col + 3;
               //increment pixel buffer address horizontally
               raddr_r <= raddr_r + 1;
             end
-            
+
             if(dout == 3) begin //check pixel buffer data
               vga_r_r <= 0;
               vga_g_r <= 0;
