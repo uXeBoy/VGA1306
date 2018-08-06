@@ -46,7 +46,7 @@ begin
     else begin
       shiftByte <= {shiftByte[10:0], din[0]}; // shift-left register
 
-      if (shiftByte == 12'hB00) begin // Page 0
+      if (shiftByte == 12'hB01) begin // Page 0
         waddr_r <= 0; // 'VSYNC'
       end
     end
