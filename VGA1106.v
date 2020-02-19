@@ -34,21 +34,25 @@ wire [addr_width-1:0] waddr;
 reg  [addr_width-1:0] waddr_r = 0;
 assign waddr = waddr_r;
 
-reg [11:0] shiftByte;
+reg        invert;
+reg  [2:0] shiftCount;
+reg  [7:0] shiftReg;
+wire [7:0] shiftLeft = {shiftReg[6:0], din[0]};
 
 always @(posedge wclk) // Write memory
 begin
-  if (cs == 0) begin // chip select
+  if (cs == 1'b0) begin // chip select
     if (write_en) begin
       mem[waddr] <= din; // Using write address bus
-      waddr_r <= waddr_r + 1; // Increment address
+      waddr_r <= waddr_r + 1'b1; // Increment address
     end
     else begin
-      shiftByte <= {shiftByte[10:0], din[0]}; // shift-left register
-
-      if (shiftByte == 12'hB01) begin // Page 0
-        waddr_r <= 0; // 'VSYNC'
+      if (shiftCount == 3'b111) begin
+        if(shiftLeft[7:1] == 'b1010011) invert <= shiftLeft[0]; // invert (A6/A7)
+        if(shiftLeft[7:3] == 'b10110) waddr_r <= {shiftLeft[2:0], 10'd0}; // page 0-7 (B0-B7)
       end
+      else shiftReg <= shiftLeft;
+      shiftCount <= shiftCount + 1'b1;
     end
   end
 end
@@ -165,14 +169,28 @@ begin
 
         if(c_row > 80 && c_row < 401) begin
             if(dout == 1) begin //check pixel buffer data
-              vga_r_r <= 1;
-              vga_g_r <= 1;
-              vga_b_r <= 1;
+              if(invert) begin
+                vga_r_r <= 0;
+                vga_g_r <= 0;
+                vga_b_r <= 0;
+              end
+              else begin
+                vga_r_r <= 1;
+                vga_g_r <= 1;
+                vga_b_r <= 1;
+              end
             end
             else begin
-              vga_r_r <= 0;
-              vga_g_r <= 0;
-              vga_b_r <= 0;
+              if(invert) begin
+                vga_r_r <= 1;
+                vga_g_r <= 1;
+                vga_b_r <= 1;
+              end
+              else begin
+                vga_r_r <= 0;
+                vga_g_r <= 0;
+                vga_b_r <= 0;
+              end
             end
 
             if(c_col == scale_col) begin
